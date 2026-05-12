@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝贝 - 原创音乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* 动态背景粒子 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 头部 */
+        header {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+            }
+            to {
+                filter: drop-shadow(0 0 30px rgba(118, 75, 162, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 4px;
+        }
+
+        /* 音乐卡片 */
+        .music-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .music-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 35px 60px rgba(102, 126, 234, 0.2);
+        }
+
+        /* 专辑封面区域 */
+        .album-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        @media (min-width: 768px) {
+            .album-section {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        .album-cover {
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .album-cover:hover {
+            transform: scale(1.05);
+        }
+
+        .album-cover::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .album-icon {
+            font-size: 5rem;
+            z-index: 1;
+        }
+
+        /* 播放信息 */
+        .player-info {
+            flex: 1;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .player-info {
+                text-align: left;
+            }
+        }
+
+        .track-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .track-artist {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .play-btn:hover {
+            background: linear-gradient(135deg, #7a8ef0, #8a5cb8);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        /* 音量控制 */
+        .volume-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .volume-icon {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 音频可视化 */
+        .visualizer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 60px;
+            margin-top: 30px;
+        }
+
+        .bar {
+            width: 8px;
+            background: linear-gradient(to top, #667eea, #764ba2, #f093fb);
+            border-radius: 4px;
+            transition: height 0.1s ease;
+        }
+
+        /* 关于部分 */
+        .about-section {
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .about-text {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 标签 */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .tag {
+            padding: 8px 20px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 60px 0 30px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* 动画入场 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header class="fade-in">
+            <h1 class="logo">♪ 宝贝 ♪</h1>
+            <p class="subtitle">原创音乐作品</p>
+        </header>
+
+        <!-- 音乐卡片 -->
+        <div class="music-card fade-in delay-1">
+            <div class="album-section">
+                <!-- 专辑封面 -->
+                <div class="album-cover" id="albumCover">
+                    <span class="album-icon">🎵</span>
+                </div>
+
+                <!-- 播放信息 -->
+                <div class="player-info">
+                    <h2 class="track-title">宝贝</h2>
+                    <p class="track-artist">原创作品</p>
+
+                    <!-- 进度条 -->
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span id="duration">0:00</span>
+                        </div>
+                    </div>
+
+                    <!-- 控制按钮 -->
+                    <div class="controls">
+                        <button class="control-btn" id="prevBtn" title="上一首">⏮</button>
+                        <button class="control-btn play-btn" id="playBtn" title="播放/暂停">▶</button>
+                        <button class="control-btn" id="nextBtn" title="下一首">⏭</button>
+                    </div>
+
+                    <!-- 音量控制 -->
+                    <div class="volume-container">
+                        <span class="volume-icon" id="volumeIcon">🔊</span>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="0.8">
+                    </div>
+
+                    <!-- 音频可视化 -->
+                    <div class="visualizer" id="visualizer">
+                        <div class="bar" style="height: 20px;"></div>
+                        <div class="bar" style="height: 35px;"></div>
+                        <div class="bar" style="height: 50px;"></div>
+                        <div class="bar" style="height: 30px;"></div>
+                        <div class="bar" style="height: 45px;"></div>
+                        <div class="bar" style="height: 25px;"></div>
+                        <div class="bar" style="height: 40px;"></div>
+                        <div class="bar" style="height: 55px;"></div>
+                        <div class="bar" style="height: 35px;"></div>
+                        <div class="bar" style="height: 20px;"></div>
+                        <div class="bar" style="height: 45px;"></div>
+                        <div class="bar" style="height: 30px;"></div>
+                        <div class="bar" style="height: 50px;"></div>
+                        <div class="bar" style="height: 25px;"></div>
+                        <div class="bar" style="height: 40px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关于部分 -->
+        <div class="about-section fade-in delay-2">
+            <h3 class="section-title">关于这首音乐</h3>
+            <p class="about-text">
+                这是一首充满情感与温度的原创音乐作品。每一个音符都承载着创作者的心意，
+                如同宝贝般珍贵。愿这首音乐能触动你的心弦，带给你温暖与感动。
+            </p>
+            <div class="tags">
+                <span class="tag">🎵 原创</span>
+                <span class="tag">💝 情感</span>
+                <span class="tag">🎧 聆听</span>
+                <span class="tag">✨ 心动</span>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="fade-in delay-3">
+            <div class="social-links">
+                <div class="social-link" title="分享到微信">💬</div>
+                <div class="social-link" title="分享到微博">📱</div>
+                <div class="social-link" title="邮件联系">✉️</div>
+            </div>
+            <p>© 2024 宝贝 - 原创音乐</p>
+        </footer>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="audio" preload="auto">
+        <source src="宝贝.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 粒子效果
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = (Math.random() * 10) + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                particle.style.width = (Math.random() * 4 + 2) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // 音乐播放器
+        const audio = document.getElementById('audio');
+        const playBtn = document.getElementById('playBtn');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const visualizer = document.getElementById('visualizer');
+        const albumCover = document.getElementById('albumCover');
+
+        let isPlaying = false;
+        let animationId;
+
+        // 格式化时间
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 播放/暂停
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = '▶';
+                cancelAnimationFrame(animationId);
+            } else {
+                audio.play();
+                playBtn.innerHTML = '⏸';
+                animateVisualizer();
+            }
+            isPlaying = !isPlaying;
+        }
+
+        playBtn.addEventListener('click', togglePlay);
+        albumCover.addEventListener('click', togglePlay);
+
+        // 更新进度
+        audio.addEventListener('timeupdate', () => {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progress.style.width = percent + '%';
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+
+        // 加载时长
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        // 点击进度条
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        });
+
+        // 音量控制
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+            updateVolumeIcon();
+        });
+
+        function updateVolumeIcon() {
+            if (audio.volume === 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (audio.volume < 0.5) {
+                volumeIcon.textContent = '🔉';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        }
+
+        volumeIcon.addEventListener('click', () => {
+            if (audio.volume > 0) {
+                audio.muted = true;
+                volumeIcon.textContent = '🔇';
+            } else {
+                audio.muted = false;
+                updateVolumeIcon();
+            }
+        });
+
+        // 音频可视化动画
+        function animateVisualizer() {
+            if (!isPlaying) return;
+
+            const bars = visualizer.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                const height = Math.random() * 50 + 10;
+                bar.style.height = height + 'px';
+            });
+
+            animationId = requestAnimationFrame(animateVisualizer);
+        }
+
+        // 播放结束时
+        audio.addEventListener('ended', () => {
+            isPlaying = false;
+            playBtn.innerHTML = '▶';
+            cancelAnimationFrame(animationId);
+            progress.style.width = '0%';
+            
+            // 重置可视化
+            const bars = visualizer.querySelectorAll('.bar');
+            bars.forEach((bar, i) => {
+                bar.style.height = (Math.sin(i * 0.5) * 20 + 30) + 'px';
+            });
+        });
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.code === 'ArrowRight') {
+                audio.currentTime += 10;
+            } else if (e.code === 'ArrowLeft') {
+                audio.currentTime -= 10;
+            }
+        });
+
+        // 鼠标悬停效果
+        document.querySelectorAll('.control-btn, .social-link, .tag').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.transform = el.classList.contains('play-btn') 
+                    ? 'scale(1.1)' 
+                    : 'translateY(-3px)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
